@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ты лох?</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            text-align: center;
+            padding: 10px;
+            transition: all 0.3s;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin: 0 auto;
+        }
+        
+        .question {
+            display: none;
+        }
+        
+        .active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 25px 0;
+        }
+        
+        .option {
+            padding: 18px;
+            border: 2px solid #ff4081;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            -webkit-tap-highlight-color: rgba(255, 64, 129, 0.2);
+            touch-action: manipulation;
+            user-select: none;
+        }
+        
+        .option:hover, .option:active {
+            background: #ff4081;
+            color: white;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff4081;
+            margin: 20px 0;
+            line-height: 1.4;
+            padding: 10px;
+            animation: fadeIn 0.5s;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 28px;
+            line-height: 1.3;
+        }
+        
+        h2 {
+            font-size: 24px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            color: #333;
+            padding: 0 10px;
+        }
+        
+        /* Улучшения для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            .option {
+                font-size: 18px;
+                padding: 15px;
+                min-height: 55px;
+            }
+            
+            .result {
+                font-size: 20px;
+            }
+        }
+        
+        /* Улучшения для мобильных устройств */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .option {
+                font-size: 18px;
+                padding: 16px;
+            }
+        }
+        
+        /* Предотвращение выделения текста при касании */
+        .option, h1, h2 {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Анимация нажатия для мобильных */
+        .option:active {
+            transform: scale(0.98);
+            transition: transform 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ты лох?</h1>
+        <div id="quiz">
+            <!-- Вопросы будут добавляться здесь -->
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Ты лох?",
+                options: ["Да", "Наверное"]
+            },
+            {
+                question: "Ты точно уверен, что ты не лох?",
+                options: ["Да", "Не думаю"]
+            },
+            {
+                question: "А может быть ты все-таки лох?",
+                options: ["Возможно", "Нет, не может"]
+            },
+            {
+                question: "Ты когда-нибудь задумывался, что ты лох?",
+                options: ["Часто", "Никогда"]
+            },
+            {
+                question: "Если бы ты был не лох, ты бы уже согласился?",
+                options: ["Вероятно", "Нет"]
+            },
+            {
+                question: "Ты понимаешь, что отрицание только подтверждает, что ты лох?",
+                options: ["Понимаю", "Не понимаю"]
+            },
+            {
+                question: "Как ты думаешь, многие ли считают тебя лохом?",
+                options: ["Наверное все", "Никто"]
+            },
+            {
+                question: "Ты готов признать, что ты лох?",
+                options: ["Готов", "Не готов"]
+            },
+            {
+                question: "Последний шанс - ты лох?",
+                options: ["Да", "Точно нет"]
+            },
+            {
+                question: "Вы абсолютно уверены?",
+                options: ["Да я уверен", "Да к счастью"]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function initQuiz() {
+            const quiz = document.getElementById('quiz');
+            
+            // Очищаем контейнер
+            quiz.innerHTML = '';
+            
+            // Создаем вопросы
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.id = `question-${index}`;
+                
+                // Создаем HTML для вопроса и вариантов ответа
+                const questionHTML = `
+                    <h2>${q.question}</h2>
+                    <div class="options">
+                        ${q.options.map((option, i) => 
+                            `<div class="option" onclick="selectAnswer(${index}, ${i})">${option}</div>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                questionDiv.innerHTML = questionHTML;
+                quiz.appendChild(questionDiv);
+            });
+            
+            // Показываем первый вопрос
+            showQuestion(0);
+        }
+
+        function showQuestion(n) {
+            // Скрываем все вопросы
+            document.querySelectorAll('.question').forEach(q => {
+                q.classList.remove('active');
+            });
+            
+            // Показываем нужный вопрос
+            const questionElement = document.getElementById(`question-${n}`);
+            if (questionElement) {
+                questionElement.classList.add('active');
+            }
+            
+            // Прокрутка к верху страницы при смене вопроса
+            window.scrollTo(0, 0);
+        }
+
+        function selectAnswer(questionIndex, optionIndex) {
+            // Для всех вопросов, кроме последнего
+            if (questionIndex < questions.length - 1) {
+                if (optionIndex === 0) { // Первый ответ (признание)
+                    score = 69;
+                    showResult();
+                } else { // Второй ответ (отрицание)
+                    showQuestion(questionIndex + 1); // Переход к следующему вопросу
+                }
+            } else { // Последний вопрос
+                score = 69;
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz').innerHTML = `
+                <div class="result">
+                    <h2>Поздравляем, вы официально признали что вы лох!</h2>
+                    <p>Ваш результат: ${score} очков!</p>
+                </div>
+            `;
+            
+            // Прокрутка к верху страницы при показе результата
+            window.scrollTo(0, 0);
+        }
+
+        // Запускаем викторину после загрузки страницы
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
